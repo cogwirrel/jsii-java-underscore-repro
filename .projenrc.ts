@@ -1,13 +1,21 @@
 import path from "path";
-import { NxMonorepoProject } from "@aws-prototyping-sdk/nx-monorepo";
+import {
+  NodePackageUtils,
+  NxMonorepoProject,
+} from "@aws-prototyping-sdk/nx-monorepo";
 import { JsiiProject } from "projen/lib/cdk";
 import { JavaProject } from "projen/lib/java";
+import { NodePackageManager } from "projen/lib/javascript";
 
 const monorepo = new NxMonorepoProject({
   defaultReleaseBranch: "main",
   devDeps: ["@aws-prototyping-sdk/nx-monorepo"],
   name: "jsii-java-underscore-repro",
 });
+
+const paths = {
+  "my-namespace-with-underscores": ["./src/my_namespace_with_underscores"],
+};
 
 const underscores = new JsiiProject({
   parent: monorepo,
@@ -22,7 +30,35 @@ const underscores = new JsiiProject({
     mavenArtifactId: "jsii-java-underscores",
     javaPackage: "jack.test.underscores",
   },
+  tsconfigDev: {
+    compilerOptions: {
+      baseUrl: '.',
+      paths,
+    },
+  },
 });
+
+underscores.package.addField("exports", {
+  ".": "./lib/index.js",
+  "./package.json": "./package.json",
+  "./.jsii": "./.jsii",
+  "./my-namespace-with-underscores":
+    "./lib/my_namespace_with_underscores/index.js",
+});
+
+underscores.manifest.jsii.tsc.baseUrl = '.';
+underscores.manifest.jsii.tsc.paths = paths;
+
+underscores.compileTask.exec(
+  NodePackageUtils.command.downloadExec(
+    NodePackageManager.YARN,
+    "tsc-alias",
+    "-p",
+    "tsconfig.dev.json",
+    "--dir",
+    "lib",
+  ),
+);
 
 const nounderscores = new JsiiProject({
   parent: monorepo,

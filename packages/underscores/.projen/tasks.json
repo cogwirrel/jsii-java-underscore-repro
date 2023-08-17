@@ -36,6 +36,9 @@
       "steps": [
         {
           "exec": "jsii --silence-warnings=reserved-word"
+        },
+        {
+          "exec": "npx tsc-alias -p tsconfig.dev.json --dir lib"
         }
       ]
     },

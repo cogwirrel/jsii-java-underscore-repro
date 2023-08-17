@@ -23,7 +23,13 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "target": "ES2019"
+    "target": "ES2019",
+    "baseUrl": ".",
+    "paths": {
+      "my-namespace-with-underscores": [
+        "./src/my_namespace_with_underscores"
+      ]
+    }
   },
   "include": [
     ".projenrc.js",
